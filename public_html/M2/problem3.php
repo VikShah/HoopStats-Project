@@ -9,9 +9,18 @@ function bePositive($arr) {
     echo "<br>Positive output:<br>";
     $output = [];
     //start edits
-    //note: use the $arr variable, don't directly touch $a1-$a4
-    //TODO Take each value of the $arr, convert it to positive, and set it to the same index in the $output array but with the original data type (i.e., if the source was a string the output slot value should be a string)
-    
+    foreach ($arr as $value) {
+        // Convert to positive value
+        $positiveValue = abs($value);
+
+        // Convert back to original data type
+        if (is_string($value)) {
+            $positiveValue = (string)$positiveValue;
+        }
+
+        $output[] = $positiveValue;
+    }
+
     //end edits
     
     //displays the output along with their types
@@ -21,15 +30,16 @@ function bePositive($arr) {
     }, $output);
     echo implode(', <br>', $mappedOutput);
 }
+
 echo "Problem 3: Be Positive<br>";
 ?>
 <table>
-    <thread>
+    <thead>
         <th>A1</th>
         <th>A2</th>
         <th>A3</th>
         <th>A4</th>
-    </thread>
+    </thead>
     <tbody>
         <tr>
             <td>
@@ -45,6 +55,7 @@ echo "Problem 3: Be Positive<br>";
                 <?php bePositive($a4); ?>
             </td>
         </tr>
+    </tbody>
 </table>
 <style>
     table {
