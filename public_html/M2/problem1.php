@@ -11,8 +11,6 @@ function processArray($arr) {
     //TODO add logic here to echo out only odd values
     // UCID: vs53 Date: 6-3-24
 
-
-
     echo "Printing the odd values only: ";
     foreach ($arr as $value) {
         if ($value % 2 !== 0) {
