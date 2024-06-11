@@ -8,6 +8,12 @@
         window.addEventListener("load", () => {
             console.log("loaded via javascript");
             //TODO: add any extra onload processing you may need here
+            document.querySelector('nav').addEventListener('click', (event) => {
+                if (event.target.tagName === 'A') {
+                    const selection = event.target.innerText;
+                    getCurrentSelection(selection);
+                }
+            });
         });
         function getCurrentSelection() {
             setTimeout(() => {
