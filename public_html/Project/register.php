@@ -23,10 +23,90 @@ reset_session();
 </form>
 <script>
     function validate(form) {
-        //TODO 1: implement JavaScript validation
-        //ensure it returns false for an error and true for success
+        let email = form.email.value;
+        let username = form.username.value;
+        let password = form.password.value;
+        let confirm = form.confirm.value;
+        let isValid = true;
+        let flash = document.getElementById("flash");
 
-        return true;
+        // Clear previous flash messages
+        flash.innerHTML = "";
+
+        // Check if email is empty
+        if (email.trim() === "") {
+            addFlashMessage("[Client] Email must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Validate email
+        if (!validateEmail(email)) {
+            addFlashMessage("[Client] Invalid email address", "danger");
+            isValid = false;
+        }
+
+        // Check if username is empty
+        if (username.trim() === "") {
+            addFlashMessage("[Client] Username must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Validate username
+        if (!validateUsername(username)) {
+            addFlashMessage("[Client] Invalid username. Must be 3-16 characters long and contain only letters, numbers, underscores, or dashes.", "danger");
+            isValid = false;
+        }
+
+        // Check if password is empty
+        if (password.trim() === "") {
+            addFlashMessage("[Client] Password must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Check if confirm password is empty
+        if (confirm.trim() === "") {
+            addFlashMessage("[Client] Confirm password must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Validate password length
+        if (password.length < 8) {
+            addFlashMessage("[Client] Password must be at least 8 characters long", "danger");
+            isValid = false;
+        }
+
+        // Check if passwords match
+        if (password !== confirm) {
+            addFlashMessage("[Client] Passwords must match", "danger");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function addFlashMessage(message, type) {
+        let flash = document.getElementById("flash");
+        let outerDiv = document.createElement("div");
+        outerDiv.className = "row justify-content-center";
+        let innerDiv = document.createElement("div");
+
+        innerDiv.className = `alert alert-${type}`;
+        innerDiv.innerText = message;
+
+        outerDiv.appendChild(innerDiv);
+        flash.appendChild(outerDiv);
+    }
+
+    function validateEmail(email) {
+        // Basic email validation regex
+        let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function validateUsername(username) {
+        // Username validation regex (3-16 characters, letters, numbers, underscores, or dashes)
+        let re = /^[a-zA-Z0-9_-]{3,16}$/;
+        return re.test(username);
     }
 </script>
 <?php
@@ -39,36 +119,36 @@ if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["confirm
     //TODO 3
     $hasError = false;
     if (empty($email)) {
-        flash("Email must not be empty", "danger");
+        flash("[Server] Email must not be empty", "danger");
         $hasError = true;
     }
     //sanitize
     $email = sanitize_email($email);
     //validate
     if (!is_valid_email($email)) {
-        flash("Invalid email address", "danger");
+        flash("[Server] Invalid email address", "danger");
         $hasError = true;
     }
     if (!is_valid_username($username)) {
-        flash("Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
+        flash("[Server] Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
         $hasError = true;
     }
     if (empty($password)) {
-        flash("password must not be empty", "danger");
+        flash("[Server] Password must not be empty", "danger");
         $hasError = true;
     }
     if (empty($confirm)) {
-        flash("Confirm password must not be empty", "danger");
+        flash("[Server] Confirm password must not be empty", "danger");
         $hasError = true;
     }
     if (!is_valid_password($password)) {
-        flash("Password too short", "danger");
+        flash("[Server] Password too short", "danger");
         $hasError = true;
     }
     if (
         strlen($password) > 0 && $password !== $confirm
     ) {
-        flash("Passwords must match", "danger");
+        flash("[Server] Passwords must match", "danger");
         $hasError = true;
     }
     if (!$hasError) {

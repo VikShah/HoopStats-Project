@@ -14,12 +14,71 @@ require(__DIR__ . "/../../partials/nav.php");
 </form>
 <script>
     function validate(form) {
-        //TODO 1: implement JavaScript validation
-        //ensure it returns false for an error and true for success
+        let emailOrUsername = form.email.value;
+        let password = form.password.value;
+        let isValid = true;
+        let flash = document.getElementById("flash");
 
-        //TODO update clientside validation to check if it should
-        //valid email or username
-        return true;
+        // Clear previous flash messages
+        flash.innerHTML = "";
+
+        // Check if email/username is empty
+        if (emailOrUsername.trim() === "") {
+            addFlashMessage("[Client] Email/Username must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Validate email or username
+        if (emailOrUsername.includes("@")) {
+            if (!validateEmail(emailOrUsername)) {
+                addFlashMessage("[Client] Invalid email address", "danger");
+                isValid = false;
+            }
+        } else {
+            if (!validateUsername(emailOrUsername)) {
+                addFlashMessage("[Client] Invalid username. Must be 3-16 characters long and contain only letters, numbers, underscores, or dashes.", "danger");
+                isValid = false;
+            }
+        }
+
+        // Check if password is empty
+        if (password.trim() === "") {
+            addFlashMessage("[Client] Password must not be empty", "danger");
+            isValid = false;
+        }
+
+        // Check if password is at least 8 characters long
+        if (password.length < 8) {
+            addFlashMessage("[Client] Password must be at least 8 characters long", "danger");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function addFlashMessage(message, type) {
+        let flash = document.getElementById("flash");
+        let outerDiv = document.createElement("div");
+        outerDiv.className = "row justify-content-center";
+        let innerDiv = document.createElement("div");
+
+        innerDiv.className = `alert alert-${type}`;
+        innerDiv.innerText = message;
+
+        outerDiv.appendChild(innerDiv);
+        flash.appendChild(outerDiv);
+    }
+
+    function validateEmail(email) {
+        // Basic email validation regex
+        let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function validateUsername(username) {
+        // Username validation regex (3-16 characters, letters, numbers, underscores, or dashes)
+        let re = /^[a-zA-Z0-9_-]{3,16}$/;
+        return re.test(username);
     }
 </script>
 <?php
@@ -31,34 +90,29 @@ if (isset($_POST["email"]) && isset($_POST["password"])) {
     //TODO 3
     $hasError = false;
     if (empty($email)) {
-        flash("Email must not be empty");
+        flash("[Server] Email must not be empty");
         $hasError = true;
     }
     if (str_contains($email, "@")) {
         //sanitize
-        //$email = filter_var($email, FILTER_SANITIZE_EMAIL);
         $email = sanitize_email($email);
         //validate
-        /*if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            flash("Invalid email address");
-            $hasError = true;
-        }*/
         if (!is_valid_email($email)) {
-            flash("Invalid email address");
+            flash("[Server] Invalid email address");
             $hasError = true;
         }
     } else {
         if (!is_valid_username($email)) {
-            flash("Invalid username");
+            flash("[Server] Invalid username");
             $hasError = true;
         }
     }
     if (empty($password)) {
-        flash("password must not be empty");
+        flash("[Server] Password must not be empty");
         $hasError = true;
     }
     if (!is_valid_password($password)) {
-        flash("Password too short");
+        flash("[Server] Password too short");
         $hasError = true;
     }
     if (!$hasError) {
@@ -92,17 +146,18 @@ if (isset($_POST["email"]) && isset($_POST["password"])) {
                         flash("Welcome, " . get_username());
                         die(header("Location: home.php"));
                     } else {
-                        flash("Invalid password");
+                        flash("[Server] Invalid password");
                     }
                 } else {
-                    flash("Email not found");
+                    flash("[Server] Email not found");
                 }
             }
         } catch (Exception $e) {
-            flash("<pre>" . var_export($e, true) . "</pre>");
+            flash("[Server] <pre>" . var_export($e, true) . "</pre>");
         }
     }
 }
 ?>
 <?php
 require(__DIR__ . "/../../partials/flash.php");
+?>
