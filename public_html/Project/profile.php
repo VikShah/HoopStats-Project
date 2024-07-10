@@ -11,11 +11,11 @@ if (isset($_POST["save"])) {
     $email = sanitize_email($email);
     //validate
     if (!is_valid_email($email)) {
-        flash("Invalid email address", "danger");
+        flash("[Server] Invalid email address", "danger");
         $hasError = true;
     }
     if (!is_valid_username($username)) {
-        flash("Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
+        flash("[Server] Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
         $hasError = true;
     }
     if (!$hasError) {
@@ -38,10 +38,10 @@ if (isset($_POST["save"])) {
                 $_SESSION["user"]["email"] = $user["email"];
                 $_SESSION["user"]["username"] = $user["username"];
             } else {
-                flash("User doesn't exist", "danger");
+                flash("[Server] User doesn't exist", "danger");
             }
         } catch (Exception $e) {
-            flash("An unexpected error occurred, please try again", "danger");
+            flash("[Server] An unexpected error occurred, please try again", "danger");
             //echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
         }
     }
@@ -54,7 +54,7 @@ if (isset($_POST["save"])) {
     if (!empty($current_password) && !empty($new_password) && !empty($confirm_password)) {
         $hasError = false;
         if (!is_valid_password($new_password)) {
-            flash("Password too short", "danger");
+            flash("[Server] Password too short", "danger");
             $hasError = true;
         }
         if (!$hasError) {
@@ -75,14 +75,14 @@ if (isset($_POST["save"])) {
 
                             flash("Password reset", "success");
                         } else {
-                            flash("Current password is invalid", "warning");
+                            flash("[Server] Current password is invalid", "warning");
                         }
                     }
                 } catch (Exception $e) {
                     echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
                 }
             } else {
-                flash("New passwords don't match", "warning");
+                flash("[Server] New passwords don't match", "warning");
             }
         }
     }
@@ -121,18 +121,73 @@ $username = get_username();
 
 <script>
     function validate(form) {
-        let pw = form.newPassword.value;
-        let con = form.confirmPassword.value;
+        let email = form.email.value;
+        let username = form.username.value;
+        let currentPassword = form.currentPassword.value;
+        let newPassword = form.newPassword.value;
+        let confirmPassword = form.confirmPassword.value;
         let isValid = true;
-        //TODO add other client side validation....
+        let flash = document.getElementById("flash");
 
-        //example of using flash via javascript
-        //find the flash container, create a new element, appendChild
-        if (pw !== con) {
-            flash("Password and Confrim password must match", "warning");
+        // Clear previous flash messages
+        flash.innerHTML = "";
+
+        // Validate email
+        if (email.trim() === "") {
+            addFlashMessage("[Client] Email must not be empty", "danger");
+            isValid = false;
+        } else if (!validateEmail(email)) {
+            addFlashMessage("[Client] Invalid email address", "danger");
             isValid = false;
         }
+
+        // Validate username
+        if (username.trim() === "") {
+            addFlashMessage("[Client] Username must not be empty", "danger");
+            isValid = false;
+        } else if (!validateUsername(username)) {
+            addFlashMessage("[Client] Invalid username. Must be 3-16 characters long and contain only letters, numbers, underscores, or dashes.", "danger");
+            isValid = false;
+        }
+
+        // Validate new password
+        if (newPassword.length > 0) {
+            if (newPassword.length < 8) {
+                addFlashMessage("[Client] New password must be at least 8 characters long", "danger");
+                isValid = false;
+            }
+            if (newPassword !== confirmPassword) {
+                addFlashMessage("[Client] Password and Confirm password must match", "danger");
+                isValid = false;
+            }
+        }
+
         return isValid;
+    }
+
+    function addFlashMessage(message, type) {
+        let flash = document.getElementById("flash");
+        let outerDiv = document.createElement("div");
+        outerDiv.className = "row justify-content-center";
+        let innerDiv = document.createElement("div");
+
+        innerDiv.className = `alert alert-${type}`;
+        innerDiv.innerText = message;
+
+        outerDiv.appendChild(innerDiv);
+        flash.appendChild(outerDiv);
+    }
+
+    function validateEmail(email) {
+        // Basic email validation regex
+        let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function validateUsername(username) {
+        // Username validation regex (3-16 characters, letters, numbers, underscores, or dashes)
+        let re = /^[a-zA-Z0-9_-]{3,16}$/;
+        return re.test(username);
     }
 </script>
 <?php
