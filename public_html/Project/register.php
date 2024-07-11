@@ -2,9 +2,11 @@
 require(__DIR__ . "/../../partials/nav.php");
 reset_session();
 ?>
+<!-- UCID: vs53, Date: Jul 10th 2024 -->
+
 <form onsubmit="return validate(this)" method="POST">
     <div>
-        <label for="email">Email</label>
+        <label for="email">Email</label> 
         <input type="email" name="email" required />
     </div>
     <div>
@@ -22,6 +24,7 @@ reset_session();
     <input type="submit" value="Register" />
 </form>
 <script>
+    
     function validate(form) {
         let email = form.email.value;
         let username = form.username.value;

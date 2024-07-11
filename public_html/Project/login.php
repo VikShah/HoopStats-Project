@@ -1,6 +1,7 @@
 <?php
 require(__DIR__ . "/../../partials/nav.php");
 ?>
+<!-- UCID: vs53, Date: Jul 10th 2024 -->
 <form onsubmit="return validate(this)" method="POST">
     <div>
         <label for="email">Email/Username</label>
@@ -13,22 +14,21 @@ require(__DIR__ . "/../../partials/nav.php");
     <input type="submit" value="Login" />
 </form>
 <script>
+        // UCID: vs53, Date: Jul 10th 2024
+
     function validate(form) {
         let emailOrUsername = form.email.value;
         let password = form.password.value;
         let isValid = true;
         let flash = document.getElementById("flash");
 
-        // Clear previous flash messages
         flash.innerHTML = "";
 
-        // Check if email/username is empty
         if (emailOrUsername.trim() === "") {
             addFlashMessage("[Client] Email/Username must not be empty", "danger");
             isValid = false;
         }
 
-        // Validate email or username
         if (emailOrUsername.includes("@")) {
             if (!validateEmail(emailOrUsername)) {
                 addFlashMessage("[Client] Invalid email address", "danger");
@@ -41,13 +41,11 @@ require(__DIR__ . "/../../partials/nav.php");
             }
         }
 
-        // Check if password is empty
         if (password.trim() === "") {
             addFlashMessage("[Client] Password must not be empty", "danger");
             isValid = false;
         }
 
-        // Check if password is at least 8 characters long
         if (password.length < 8) {
             addFlashMessage("[Client] Password must be at least 8 characters long", "danger");
             isValid = false;
@@ -70,19 +68,19 @@ require(__DIR__ . "/../../partials/nav.php");
     }
 
     function validateEmail(email) {
-        // Basic email validation regex
         let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
     }
 
     function validateUsername(username) {
-        // Username validation regex (3-16 characters, letters, numbers, underscores, or dashes)
         let re = /^[a-zA-Z0-9_-]{3,16}$/;
         return re.test(username);
     }
 </script>
 <?php
 //TODO 2: add PHP Code
+    // UCID: vs53, Date: Jul 10th 2024
+
 if (isset($_POST["email"]) && isset($_POST["password"])) {
     $email = se($_POST, "email", "", false);
     $password = se($_POST, "password", "", false);
