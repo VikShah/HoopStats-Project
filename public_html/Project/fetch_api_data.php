@@ -1,5 +1,5 @@
 <?php
-// Enable error reporting
+// Enable error reporting for debugging purposes
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 require(__DIR__ . "/../../lib/functions.php");
 
 function fetchAndStoreApiData() {
-    $apiKey = "349fe690638d4800a67c83dc5ef44fbb"; // Your custom replay API key
+    $apiKey = "93898150famsh91be62240b4e20fp15f209jsna1205e9ebeaf"; // Your RapidAPI key
 
     // Initialize database connection
     $db = getDB();
@@ -15,47 +15,14 @@ function fetchAndStoreApiData() {
     // Clear out the player_stats table
     $db->exec("TRUNCATE TABLE player_stats");
 
-    // Fetch all teams data
-    $teamApiUrl = "https://replay.sportsdata.io/api/v3/nba/stats/json/allteams?key=$apiKey";
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $teamApiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Content-Type: application/json"
-    ]);
-    $teamResponse = curl_exec($ch);
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-        exit;
-    }
-    curl_close($ch);
-
-    // Print the raw response for debugging
-    echo "Raw API Response: " . $teamResponse . "\n";
-
-    // Attempt to decode the JSON response
-    $teamsData = json_decode($teamResponse, true);
-
-    // Check for a valid API response
-    if (!is_array($teamsData)) {
-        echo "Unexpected teams response structure.\n";
-        var_dump($teamsData);
-        return;
-    }
-
-    // Store teams in an associative array for easy lookup
-    $teams = [];
-    foreach ($teamsData as $team) {
-        $teams[$team['TeamID']] = $team['Name'];
-    }
-
-    // Fetch player data
-    $playerApiUrl = "https://replay.sportsdata.io/api/v3/nba/stats/json/playergamestatsbydate/2023-12-01?key=$apiKey"; // Adjust endpoint if needed
+    // Fetch player data from the API
+    $playerApiUrl = "https://api-nba-v1.p.rapidapi.com/players?team=1&season=2021";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $playerApiUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Content-Type: application/json"
+        "x-rapidapi-host: api-nba-v1.p.rapidapi.com",
+        "x-rapidapi-key: $apiKey"
     ]);
     $playerResponse = curl_exec($ch);
     if (curl_errno($ch)) {
@@ -65,38 +32,48 @@ function fetchAndStoreApiData() {
     curl_close($ch);
     $playersData = json_decode($playerResponse, true);
 
-    // Check if the response structure matches expectations
-    if (is_array($playersData)) {
-        // Store data in the database
-        foreach ($playersData as $player) {
-            $player_id = $player['PlayerID'];
-            $player_name = $player['Name'];
-            $team_id = $player['TeamID'] ?? null;
-            $team_name = $team_id ? ($teams[$team_id] ?? 'Unknown') : 'Unknown';
-
-            // Insert or update player data
+    if (isset($playersData['response']) && is_array($playersData['response'])) {
+        foreach ($playersData['response'] as $player) {
             $stmt = $db->prepare("
                 INSERT INTO player_stats 
-                (player_id, player_name, team_name) 
+                (player_id, first_name, last_name, position, height, weight, country, college, birth_date, nba_start_year, years_pro) 
                 VALUES 
-                (:player_id, :player_name, :team_name)
+                (:player_id, :first_name, :last_name, :position, :height, :weight, :country, :college, :birth_date, :nba_start_year, :years_pro)
                 ON DUPLICATE KEY UPDATE 
-                team_name = VALUES(team_name)
+                first_name = VALUES(first_name),
+                last_name = VALUES(last_name),
+                position = VALUES(position),
+                height = VALUES(height),
+                weight = VALUES(weight),
+                country = VALUES(country),
+                college = VALUES(college),
+                birth_date = VALUES(birth_date),
+                nba_start_year = VALUES(nba_start_year),
+                years_pro = VALUES(years_pro)
             ");
+            // Convert the birth date to null if not available
+            $birthDate = !empty($player['birth']['date']) ? $player['birth']['date'] : null;
             $stmt->execute([
-                ":player_id" => $player_id,
-                ":player_name" => $player_name,
-                ":team_name" => $team_name
+                ":player_id" => $player['id'],
+                ":first_name" => $player['firstname'],
+                ":last_name" => $player['lastname'],
+                ":position" => $player['leagues']['standard']['pos'] ?? 'N/A',
+                ":height" => $player['height']['meters'] ?? null,
+                ":weight" => $player['weight']['kilograms'] ?? null,
+                ":country" => $player['birth']['country'] ?? 'N/A',
+                ":college" => $player['college'] ?? 'N/A',
+                ":birth_date" => $birthDate,
+                ":nba_start_year" => $player['nba']['start'] ?? null,
+                ":years_pro" => $player['nba']['pro'] ?? null
             ]);
         }
 
         echo "Data import completed.\n";
     } else {
-        echo "Unexpected players response structure.\n";
+        echo "Unexpected API response structure.\n";
         var_dump($playersData);
     }
 }
 
-// Call the function to fetch and store the API data
 fetchAndStoreApiData();
 ?>

@@ -1,7 +1,10 @@
 <?php
 require(__DIR__ . "/../../partials/nav.php");
 ?>
+
 <!-- UCID: vs53, Date: Jul 10th 2024 -->
+<link rel="stylesheet" href="<?php echo get_url('styles.css'); ?>">
+
 <form onsubmit="return validate(this)" method="POST">
     <div>
         <label for="email">Email/Username</label>

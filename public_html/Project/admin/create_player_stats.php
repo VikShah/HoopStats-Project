@@ -19,14 +19,15 @@ if (isset($_POST["player_name"])) {
     $field_goal_percentage = se($_POST, "field_goal_percentage", 0.0, false);
     $free_throw_percentage = se($_POST, "free_throw_percentage", 0.0, false);
     $three_point_percentage = se($_POST, "three_point_percentage", 0.0, false);
-    $player_id = se($_POST, "player_id", null, false); // Optional or required based on your logic
+    $player_id = se($_POST, "player_id", null, false);
 
+    // Ensure the player name is not empty
     if (empty($player_name)) {
         flash("Player name is required", "warning");
     } else {
         $db = getDB();
         // Insert or update the player stats
-        $stmt = $db->prepare("INSERT INTO player_stats (player_id, player_name, team_name, points_per_game, rebounds_per_game, assists_per_game, steals_per_game, blocks_per_game, field_goal_percentage, free_throw_percentage, three_point_percentage, api_record_id) VALUES(:player_id, :player_name, :team_name, :points_per_game, :rebounds_per_game, :assists_per_game, :steals_per_game, :blocks_per_game, :field_goal_percentage, :free_throw_percentage, :three_point_percentage, :api_record_id) ON DUPLICATE KEY UPDATE points_per_game = :points_per_game, rebounds_per_game = :rebounds_per_game, assists_per_game = :assists_per_game, steals_per_game = :steals_per_game, blocks_per_game = :blocks_per_game, field_goal_percentage = :field_goal_percentage, free_throw_percentage = :free_throw_percentage, three_point_percentage = :three_point_percentage");
+        $stmt = $db->prepare("INSERT INTO player_stats (player_id, player_name, team_name, points_per_game, rebounds_per_game, assists_per_game, steals_per_game, blocks_per_game, field_goal_percentage, free_throw_percentage, three_point_percentage, api_record_id) VALUES(:player_id, :player_name, :team_name, :points_per_game, :rebounds_per_game, :assists_per_game, :steals_per_game, :blocks_per_game, :field_goal_percentage, :free_throw_percentage, :three_point_percentage, :api_record_id) ON DUPLICATE KEY UPDATE player_name = VALUES(player_name), team_name = VALUES(team_name), points_per_game = VALUES(points_per_game), rebounds_per_game = VALUES(rebounds_per_game), assists_per_game = VALUES(assists_per_game), steals_per_game = VALUES(steals_per_game), blocks_per_game = VALUES(blocks_per_game), field_goal_percentage = VALUES(field_goal_percentage), free_throw_percentage = VALUES(free_throw_percentage), three_point_percentage = VALUES(three_point_percentage)");
         try {
             $stmt->execute([
                 ":player_id" => $player_id,
@@ -40,11 +41,11 @@ if (isset($_POST["player_name"])) {
                 ":field_goal_percentage" => $field_goal_percentage,
                 ":free_throw_percentage" => $free_throw_percentage,
                 ":three_point_percentage" => $three_point_percentage,
-                ":api_record_id" => null // Set to null for manually created records
+                ":api_record_id" => $player_id ? null : "manual" // Mark manually created records
             ]);
             flash("Successfully added/updated player stats!", "success");
         } catch (PDOException $e) {
-            flash(var_export($e->errorInfo, true), "danger");
+            flash("Database error: " . var_export($e->errorInfo, true), "danger");
         }
     }
 }
@@ -52,7 +53,7 @@ if (isset($_POST["player_name"])) {
 
 <h1>Create Player Stats</h1>
 <form method="POST">
-    <label for="player_id">Player ID</label>
+    <label for="player_id">Player ID (Leave empty for new players)</label>
     <input id="player_id" name="player_id" type="number" />
     <label for="player_name">Player Name</label>
     <input id="player_name" name="player_name" required />

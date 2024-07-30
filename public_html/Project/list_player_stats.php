@@ -16,13 +16,13 @@ $limit = se($_GET, "limit", 10, false);
 $limit = max(1, min(100, $limit)); // Ensure limit is within 1-100
 $page = se($_GET, "page", 1, false);
 $offset = ($page - 1) * $limit;
-$sort = se($_GET, "sort", "points_per_game", false);
-$order = se($_GET, "order", "DESC", false); // Default order
+$sort = se($_GET, "sort", "last_name", false); // Sorting by last name by default
+$order = se($_GET, "order", "ASC", false); // Default order
 $filter = se($_GET, "filter", "", false);
 
 // Fetch player stats with filtering, sorting, and pagination
 $db = getDB();
-$query = "SELECT * FROM player_stats WHERE player_name LIKE :filter ORDER BY $sort $order LIMIT :limit OFFSET :offset";
+$query = "SELECT * FROM player_stats WHERE first_name LIKE :filter OR last_name LIKE :filter ORDER BY $sort $order LIMIT :limit OFFSET :offset";
 $stmt = $db->prepare($query);
 $filterParam = "%" . $filter . "%";
 $stmt->bindParam(":filter", $filterParam, PDO::PARAM_STR);
@@ -33,7 +33,7 @@ $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
-<h1>Player Statistics</h1>
+<h1>Player Information</h1>
 <form method="GET">
     <label for="filter">Filter by Player Name:</label>
     <input id="filter" name="filter" value="<?php se($filter); ?>" />
@@ -45,10 +45,10 @@ $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <table>
     <thead>
         <tr>
-            <th><a href="?sort=player_name&order=<?php echo $order === "ASC" ? "DESC" : "ASC"; ?>">Player Name</a></th>
+            <th><a href="?sort=first_name&order=<?php echo $order === 'ASC' ? 'DESC' : 'ASC'; ?>">First Name</a></th>
+            <th><a href="?sort=last_name&order=<?php echo $order === 'ASC' ? 'DESC' : 'ASC'; ?>">Last Name</a></th>
             <th>Team Name</th>
-            <th><a href="?sort=points_per_game&order=<?php echo $order === "ASC" ? "DESC" : "ASC"; ?>">Points Per Game</a></th>
-            <th><a href="?sort=rebounds_per_game&order=<?php echo $order === "ASC" ? "DESC" : "ASC"; ?>">Rebounds Per Game</a></th>
+            <th>Position</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -60,15 +60,15 @@ $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php else : ?>
             <?php foreach ($players as $player) : ?>
                 <tr>
-                    <td><?php se($player, "player_name"); ?></td>
+                    <td><?php se($player, "first_name"); ?></td>
+                    <td><?php se($player, "last_name"); ?></td>
                     <td><?php se($player, "team_name"); ?></td>
-                    <td><?php se($player, "points_per_game"); ?></td>
-                    <td><?php se($player, "rebounds_per_game"); ?></td>
+                    <td><?php se($player, "position"); ?></td>
                     <td>
-                        <a href="view_player_stats.php?id=<?php se($player, "id"); ?>">View</a>
+                        <a href="view_player.php?id=<?php se($player, "player_id"); ?>">View</a>
                         <?php if ($isAdmin) : ?>
-                            | <a href="edit_player_stats.php?id=<?php se($player, "id"); ?>">Edit</a>
-                            | <a href="delete_player_stats.php?id=<?php se($player, "id"); ?>">Delete</a>
+                            | <a href="edit_player.php?id=<?php se($player, "player_id"); ?>">Edit</a>
+                            | <a href="delete_player.php?id=<?php se($player, "player_id"); ?>">Delete</a>
                         <?php endif; ?>
                     </td>
                 </tr>
