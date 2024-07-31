@@ -152,8 +152,8 @@ $totalPages = ceil($totalRecords / $limit);
                                 <td>
                                     <a href="view_player.php?id=<?php se($player, "player_id"); ?>">View</a>
                                     <?php if ($isAdmin) : ?>
-                                        | <a href="edit_player.php?id=<?php se($player, "player_id"); ?>">Edit</a>
-                                        | <a href="delete_player.php?id=<?php se($player, "player_id"); ?>">Delete</a>
+                                        | <a href="<?php echo get_url('admin/edit_player.php?id=' . se($player, "player_id", "", false)); ?>">Edit</a>
+                                        | <a href="<?php echo get_url('admin/delete_player.php?id=' . se($player, "player_id", "", false)); ?>">Delete</a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
