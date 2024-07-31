@@ -34,6 +34,10 @@ if ($player_id) {
                     <p><strong>NBA Start Year:</strong> <?php echo htmlspecialchars($player['nba_start_year'] ?? 'N/A'); ?></p>
                     <p><strong>Position:</strong> <?php echo htmlspecialchars($player['position'] ?? 'N/A'); ?></p>
                 </div>
+                <!-- Link to Edit Player -->
+                <?php if (has_role("Admin")): ?>
+                    <a href="<?php echo get_url('admin/edit_player.php?id=' . $player['player_id']); ?>">Edit Player</a>
+                <?php endif; ?>
             </div>
         </div>
     </main>
