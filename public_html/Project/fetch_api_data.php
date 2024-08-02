@@ -1,9 +1,12 @@
 <?php
 // Enable error reporting for debugging purposes
+// UCID: Vs53 Date: July 30th 2024
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// UCID: Vs53 Date: July 30th 2024
 require(__DIR__ . "/../../lib/functions.php");
 
 function fetchAndStoreApiData() {
@@ -16,6 +19,7 @@ function fetchAndStoreApiData() {
     $db->exec("TRUNCATE TABLE player_stats");
 
     // Fetch player data from the API
+    // UCID: Vs53 Date: July 30th 2024
     $playerApiUrl = "https://api-nba-v1.p.rapidapi.com/players?team=1&season=2021";
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $playerApiUrl);
@@ -36,9 +40,9 @@ function fetchAndStoreApiData() {
         foreach ($playersData['response'] as $player) {
             $stmt = $db->prepare("
                 INSERT INTO player_stats 
-                (player_id, first_name, last_name, position, height, weight, country, college, birth_date, nba_start_year, years_pro) 
+                (player_id, first_name, last_name, position, height, weight, country, college, birth_date, nba_start_year, years_pro, data_source) 
                 VALUES 
-                (:player_id, :first_name, :last_name, :position, :height, :weight, :country, :college, :birth_date, :nba_start_year, :years_pro)
+                (:player_id, :first_name, :last_name, :position, :height, :weight, :country, :college, :birth_date, :nba_start_year, :years_pro, 'API')
                 ON DUPLICATE KEY UPDATE 
                 first_name = VALUES(first_name),
                 last_name = VALUES(last_name),

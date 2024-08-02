@@ -60,9 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $hasError = true;
     }
 
+    // UCID: Vs53 Date: July 30th 2024
+
     if (!$hasError) {
         $db = getDB();
-        $stmt = $db->prepare("INSERT INTO player_stats (first_name, last_name, position, height, weight, country, college, birth_date, nba_start_year, years_pro) VALUES (:first_name, :last_name, :position, :height, :weight, :country, :college, :birth_date, :nba_start_year, :years_pro)");
+        $stmt = $db->prepare("INSERT INTO player_stats (first_name, last_name, position, height, weight, country, college, birth_date, nba_start_year, years_pro, data_source) VALUES (:first_name, :last_name, :position, :height, :weight, :country, :college, :birth_date, :nba_start_year, :years_pro, 'CUSTOM')");
         try {
             $stmt->execute([
                 ":first_name" => $first_name,
