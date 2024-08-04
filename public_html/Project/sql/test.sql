@@ -1,1 +1,1 @@
-ALTER TABLE player_stats DROP COLUMN team_id;
+ALTER TABLE player_stats ADD COLUMN data_source ENUM('API', 'CUSTOM') DEFAULT 'API';

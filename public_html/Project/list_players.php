@@ -122,6 +122,7 @@ $totalPages = ceil($totalRecords / $limit);
 <body>
     <div class="container">
         <h1>Player Information</h1>
+        <?php require_once(__DIR__ . "/../../partials/flash.php"); ?>
         <form method="GET">
             <label for="filter">Filter by Player Name:</label>
             <input id="filter" name="filter" value="<?php se($filter); ?>" />
