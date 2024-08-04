@@ -4,7 +4,7 @@ require(__DIR__ . "/../../../partials/nav.php");
 
 // UCID: Vs53 Date: July 30th 2024
 
-// Ensure the user is logged in and has admin privileges
+// the user is logged in and has admin privileges
 is_logged_in(true);
 if (!has_role("Admin")) {
     flash("You do not have permission to access this page", "danger");
