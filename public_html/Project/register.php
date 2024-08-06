@@ -24,7 +24,8 @@ reset_session();
     <input type="submit" value="Register" />
 </form>
 <script>
-    
+
+    // UCID: vs53, Date: Jul 10th 2024
     function validate(form) {
         let email = form.email.value;
         let username = form.username.value;
@@ -33,46 +34,38 @@ reset_session();
         let isValid = true;
         let flash = document.getElementById("flash");
 
-        // Clear previous flash messages
         flash.innerHTML = "";
 
-        // Check if email is empty
         if (email.trim() === "") {
             addFlashMessage("[Client] Email must not be empty", "danger");
             isValid = false;
         }
 
-        // Validate email
         if (!validateEmail(email)) {
             addFlashMessage("[Client] Invalid email address", "danger");
             isValid = false;
         }
 
-        // Check if username is empty
         if (username.trim() === "") {
             addFlashMessage("[Client] Username must not be empty", "danger");
             isValid = false;
         }
 
-        // Validate username
         if (!validateUsername(username)) {
             addFlashMessage("[Client] Invalid username. Must be 3-16 characters long and contain only letters, numbers, underscores, or dashes.", "danger");
             isValid = false;
         }
 
-        // Check if password is empty
         if (password.trim() === "") {
             addFlashMessage("[Client] Password must not be empty", "danger");
             isValid = false;
         }
 
-        // Check if confirm password is empty
         if (confirm.trim() === "") {
             addFlashMessage("[Client] Confirm password must not be empty", "danger");
             isValid = false;
         }
 
-        // Validate password length
         if (password.length < 8) {
             addFlashMessage("[Client] Password must be at least 8 characters long", "danger");
             isValid = false;
@@ -101,19 +94,20 @@ reset_session();
     }
 
     function validateEmail(email) {
-        // Basic email validation regex
         let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
     }
 
     function validateUsername(username) {
-        // Username validation regex (3-16 characters, letters, numbers, underscores, or dashes)
         let re = /^[a-zA-Z0-9_-]{3,16}$/;
         return re.test(username);
     }
 </script>
 <?php
 //TODO 2: add PHP Code
+
+    // UCID: vs53, Date: Jul 10th 2024
+
 if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["confirm"]) && isset($_POST["username"])) {
     $email = se($_POST, "email", "", false);
     $password = se($_POST, "password", "", false);
