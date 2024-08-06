@@ -159,6 +159,7 @@ $totalPages = ceil($totalRecords / $limit);
                                         | <a href="<?php echo get_url('admin/edit_player.php?id=' . se($player, "player_id", "", false)); ?>">Edit</a>
                                         | <a href="<?php echo get_url('admin/delete_player.php?id=' . se($player, "player_id", "", false)); ?>">Delete</a>
                                     <?php endif; ?>
+                                    <!-- UCID: Vs53 Date: August 5th 2024 -->
                                     <?php if ($player['is_favorite']) : ?>
                                         <form method="POST" action="remove_from_favorites.php" style="display:inline;">
                                             <input type="hidden" name="player_id" value="<?php se($player, "player_id"); ?>">
