@@ -156,6 +156,11 @@ $totalPages = ceil($totalRecords / $limit);
                                         | <a href="<?php echo get_url('admin/edit_player.php?id=' . se($player, "player_id", "", false)); ?>">Edit</a>
                                         | <a href="<?php echo get_url('admin/delete_player.php?id=' . se($player, "player_id", "", false)); ?>">Delete</a>
                                     <?php endif; ?>
+                                    <form method="POST" action="<?php echo get_url('manage_favorites.php'); ?>" style="display:inline;">
+                                        <input type="hidden" name="player_id" value="<?php se($player, "player_id"); ?>">
+                                        <input type="hidden" name="action" value="add">
+                                        <input type="submit" value="Add to Favorites">
+                                    </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
