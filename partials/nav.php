@@ -46,6 +46,7 @@ session_start();
             <li><a href="<?php echo get_url('fetch_api_data.php'); ?>">Fetch API Data</a></li>
             <li><a href="<?php echo get_url('manage_favorites.php'); ?>">Manage Favorites</a></li>
             <li><a href="<?php echo get_url('unassociated_players.php'); ?>">Unassociated Players</a></li>
+            <li><a href="<?php echo get_url('all_user_associations.php'); ?>">All User Associations</a></li>
         <?php endif; ?>
         <?php if (is_logged_in()) : ?>
             <li><a href="<?php echo get_url('logout.php'); ?>">Logout</a></li>
