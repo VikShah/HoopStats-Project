@@ -1,6 +1,21 @@
 <?php
 require(__DIR__ . "/../../partials/nav.php");
 is_logged_in(true);
+
+// Get the user ID from the query parameter or use the logged-in user's ID
+$viewing_user_id = se($_GET, "id", get_user_id(), false);
+
+// Fetch the user's profile data
+$db = getDB();
+$stmt = $db->prepare("SELECT * FROM Users WHERE id = :id");
+$stmt->execute([":id" => $viewing_user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// If user data is not found, redirect to the home page
+if (!$user) {
+    flash("User not found", "danger");
+    die(header("Location: home.php"));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,119 +110,125 @@ is_logged_in(true);
 </head>
 <body>
     <div class="container">
+        <h1>Profile of <?php se($user, "username"); ?></h1>
+        <p>Username: <?php se($user, "username"); ?></p>
+        <p>Email: <?php se($user, "email"); ?></p>
+        <p>Joined: <?php se($user, "created"); ?></p>
         <?php
-        if (isset($_POST["save"])) {
-            $email = se($_POST, "email", null, false);
-            $username = se($_POST, "username", null, false);
-            $hasError = false;
-            //sanitize
-            $email = sanitize_email($email);
-            //validate
-            if (!is_valid_email($email)) {
-                flash("[Server] Invalid email address", "danger");
-                $hasError = true;
-            }
-            if (!is_valid_username($username)) {
-                flash("[Server] Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
-                $hasError = true;
-            }
-            if (!$hasError) {
-                $params = [":email" => $email, ":username" => $username, ":id" => get_user_id()];
-                $db = getDB();
-                $stmt = $db->prepare("UPDATE Users set email = :email, username = :username where id = :id");
-                try {
-                    $stmt->execute($params);
-                    flash("Profile saved", "success");
-                } catch (Exception $e) {
-                    users_check_duplicate($e->errorInfo);
-                }
-                //select fresh data from table
-                $stmt = $db->prepare("SELECT id, email, username from Users where id = :id LIMIT 1");
-                try {
-                    $stmt->execute([":id" => get_user_id()]);
-                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-                    if ($user) {
-                        //$_SESSION["user"] = $user;
-                        $_SESSION["user"]["email"] = $user["email"];
-                        $_SESSION["user"]["username"] = $user["username"];
-                    } else {
-                        flash("[Server] User doesn't exist", "danger");
-                    }
-                } catch (Exception $e) {
-                    flash("[Server] An unexpected error occurred, please try again", "danger");
-                    //echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
-                }
-            }
-
-            //check/update password
-            $current_password = se($_POST, "currentPassword", null, false);
-            $new_password = se($_POST, "newPassword", null, false);
-            $confirm_password = se($_POST, "confirmPassword", null, false);
-            if (!empty($current_password) && !empty($new_password) && !empty($confirm_password)) {
+        if ($viewing_user_id == get_user_id()) :
+            if (isset($_POST["save"])) {
+                $email = se($_POST, "email", null, false);
+                $username = se($_POST, "username", null, false);
                 $hasError = false;
-                if (!is_valid_password($new_password)) {
-                    flash("[Server] Password too short", "danger");
+                //sanitize
+                $email = sanitize_email($email);
+                //validate
+                if (!is_valid_email($email)) {
+                    flash("[Server] Invalid email address", "danger");
+                    $hasError = true;
+                }
+                if (!is_valid_username($username)) {
+                    flash("[Server] Username must only contain 3-16 characters a-z, 0-9, _, or -", "danger");
                     $hasError = true;
                 }
                 if (!$hasError) {
-                    if ($new_password === $confirm_password) {
-                        //TODO validate current
-                        $stmt = $db->prepare("SELECT password from Users where id = :id");
-                        try {
-                            $stmt->execute([":id" => get_user_id()]);
-                            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                            if (isset($result["password"])) {
-                                if (password_verify($current_password, $result["password"])) {
-                                    $query = "UPDATE Users set password = :password where id = :id";
-                                    $stmt = $db->prepare($query);
-                                    $stmt->execute([
-                                        ":id" => get_user_id(),
-                                        ":password" => password_hash($new_password, PASSWORD_BCRYPT)
-                                    ]);
-
-                                    flash("Password reset", "success");
-                                } else {
-                                    flash("[Server] Current password is invalid", "warning");
-                                }
-                            }
-                        } catch (Exception $e) {
-                            echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
+                    $params = [":email" => $email, ":username" => $username, ":id" => get_user_id()];
+                    $db = getDB();
+                    $stmt = $db->prepare("UPDATE Users set email = :email, username = :username where id = :id");
+                    try {
+                        $stmt->execute($params);
+                        flash("Profile saved", "success");
+                    } catch (Exception $e) {
+                        users_check_duplicate($e->errorInfo);
+                    }
+                    //select fresh data from table
+                    $stmt = $db->prepare("SELECT id, email, username from Users where id = :id LIMIT 1");
+                    try {
+                        $stmt->execute([":id" => get_user_id()]);
+                        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                        if ($user) {
+                            //$_SESSION["user"] = $user;
+                            $_SESSION["user"]["email"] = $user["email"];
+                            $_SESSION["user"]["username"] = $user["username"];
+                        } else {
+                            flash("[Server] User doesn't exist", "danger");
                         }
-                    } else {
-                        flash("[Server] New passwords don't match", "warning");
+                    } catch (Exception $e) {
+                        flash("[Server] An unexpected error occurred, please try again", "danger");
+                        //echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
+                    }
+                }
+
+                //check/update password
+                $current_password = se($_POST, "currentPassword", null, false);
+                $new_password = se($_POST, "newPassword", null, false);
+                $confirm_password = se($_POST, "confirmPassword", null, false);
+                if (!empty($current_password) && !empty($new_password) && !empty($confirm_password)) {
+                    $hasError = false;
+                    if (!is_valid_password($new_password)) {
+                        flash("[Server] Password too short", "danger");
+                        $hasError = true;
+                    }
+                    if (!$hasError) {
+                        if ($new_password === $confirm_password) {
+                            //TODO validate current
+                            $stmt = $db->prepare("SELECT password from Users where id = :id");
+                            try {
+                                $stmt->execute([":id" => get_user_id()]);
+                                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                if (isset($result["password"])) {
+                                    if (password_verify($current_password, $result["password"])) {
+                                        $query = "UPDATE Users set password = :password where id = :id";
+                                        $stmt = $db->prepare($query);
+                                        $stmt->execute([
+                                            ":id" => get_user_id(),
+                                            ":password" => password_hash($new_password, PASSWORD_BCRYPT)
+                                        ]);
+
+                                        flash("Password reset", "success");
+                                    } else {
+                                        flash("[Server] Current password is invalid", "warning");
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                echo "<pre>" . var_export($e->errorInfo, true) . "</pre>";
+                            }
+                        } else {
+                            flash("[Server] New passwords don't match", "warning");
+                        }
                     }
                 }
             }
-        }
 
-        $email = get_user_email();
-        $username = get_username();
+            $email = get_user_email();
+            $username = get_username();
         ?>
-        <form method="POST" onsubmit="return validate(this);">
-            <div class="mb-3">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" value="<?php se($email); ?>" />
-            </div>
-            <div class="mb-3">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" value="<?php se($username); ?>" />
-            </div>
-            <!-- DO NOT PRELOAD PASSWORD -->
-            <div>Password Reset</div>
-            <div class="mb-3">
-                <label for="cp">Current Password</label>
-                <input type="password" name="currentPassword" id="cp" />
-            </div>
-            <div class="mb-3">
-                <label for="np">New Password</label>
-                <input type="password" name="newPassword" id="np" />
-            </div>
-            <div class="mb-3">
-                <label for="conp">Confirm Password</label>
-                <input type="password" name="confirmPassword" id="conp" />
-            </div>
-            <input type="submit" value="Update Profile" name="save" />
-        </form>
+            <form method="POST" onsubmit="return validate(this);">
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" value="<?php se($email); ?>" />
+                </div>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" value="<?php se($username); ?>" />
+                </div>
+                <!-- DO NOT PRELOAD PASSWORD -->
+                <div>Password Reset</div>
+                <div class="mb-3">
+                    <label for="cp">Current Password</label>
+                    <input type="password" name="currentPassword" id="cp" />
+                </div>
+                <div class="mb-3">
+                    <label for="np">New Password</label>
+                    <input type="password" name="newPassword" id="np" />
+                </div>
+                <div class="mb-3">
+                    <label for="conp">Confirm Password</label>
+                    <input type="password" name="confirmPassword" id="conp" />
+                </div>
+                <input type="submit" value="Update Profile" name="save" />
+            </form>
+        <?php endif; ?>
     </div>
     <footer>
         <?php include(__DIR__ . "/../../partials/footer.php"); ?>
@@ -273,7 +294,7 @@ is_logged_in(true);
 
         function validateEmail(email) {
             // Basic email validation regex
-            let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let re = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
             return re.test(email);
         }
 
