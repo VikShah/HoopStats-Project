@@ -15,8 +15,8 @@ function fetchAndStoreApiData() {
     // Initialize database connection
     $db = getDB();
 
-    // Clear out the player_stats table
-    $db->exec("TRUNCATE TABLE player_stats");
+    // Clear out the player_stats table using DELETE instead of TRUNCATE
+    $db->exec("DELETE FROM player_stats");
 
     // Fetch player data from the API
     // UCID: Vs53 Date: July 30th 2024

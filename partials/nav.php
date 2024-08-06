@@ -32,6 +32,7 @@ session_start();
             <li><a href="<?php echo get_url('home.php'); ?>">Home</a></li>
             <li><a href="<?php echo get_url('profile.php'); ?>">Profile</a></li>
             <li><a href="<?php echo get_url('list_players.php'); ?>">Players List</a></li>
+            <li><a href="<?php echo get_url('favorites.php'); ?>">My Favorites</a></li>
         <?php endif; ?>
         <?php if (!is_logged_in()) : ?>
             <li><a href="<?php echo get_url('login.php'); ?>">Login</a></li>
@@ -42,7 +43,11 @@ session_start();
             <li><a href="<?php echo get_url('admin/list_roles.php'); ?>">List Roles</a></li>
             <li><a href="<?php echo get_url('admin/assign_roles.php'); ?>">Assign Roles</a></li>
             <li><a href="<?php echo get_url('admin/create_player.php'); ?>">Add Player</a></li>
-            <li><a href="<?php echo get_url('fetch_api_data.php'); ?>">Fetch API Data</a></li> <!-- Adjusted path -->
+            <li><a href="<?php echo get_url('fetch_api_data.php'); ?>">Fetch API Data</a></li>
+            <li><a href="<?php echo get_url('manage_favorites.php'); ?>">Manage Favorites</a></li>
+            <li><a href="<?php echo get_url('unassociated_players.php'); ?>">Unassociated Players</a></li>
+            <li><a href="<?php echo get_url('associate_entities.php'); ?>">Associate Entities</a></li>
+            <li><a href="<?php echo get_url('all_user_associations.php'); ?>">All User Associations</a></li>
         <?php endif; ?>
         <?php if (is_logged_in()) : ?>
             <li><a href="<?php echo get_url('logout.php'); ?>">Logout</a></li>
