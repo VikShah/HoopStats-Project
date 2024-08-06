@@ -1,5 +1,4 @@
 <?php
-// Use __DIR__ to include the nav.php file relative to the current file's location
 require(__DIR__ . "/../../partials/nav.php");
 
 // Check if the user is logged in
@@ -10,11 +9,12 @@ if (!is_logged_in()) {
 
 // Check if the user has admin role for admin-specific functionalities
 $isAdmin = has_role("Admin");
+$user_id = get_user_id();
 
 // Handle filtering, sorting, and pagination parameters
 $limit = 10; // Fixed limit for pagination
 $page = se($_GET, "page", 1, false);
-$page = max(1, $page); // Ensure page number is at least 1
+$page = max(1, $page); // Make sure page number is at least 1
 $offset = ($page - 1) * $limit;
 $sort = se($_GET, "sort", "last_name", false); // Sorting by last name by default
 $order = se($_GET, "order", "ASC", false); // Default order
@@ -22,12 +22,15 @@ $filter = se($_GET, "filter", "", false);
 
 // Fetch player stats with filtering, sorting, and pagination
 $db = getDB();
-$query = "SELECT * FROM player_stats WHERE first_name LIKE :filter OR last_name LIKE :filter ORDER BY $sort $order LIMIT :limit OFFSET :offset";
+$query = "SELECT p.*, uf.user_id AS is_favorite FROM player_stats p 
+          LEFT JOIN user_favorites uf ON p.player_id = uf.player_id AND uf.user_id = :user_id 
+          WHERE first_name LIKE :filter OR last_name LIKE :filter ORDER BY $sort $order LIMIT :limit OFFSET :offset";
 $stmt = $db->prepare($query);
 $filterParam = "%" . $filter . "%";
 $stmt->bindParam(":filter", $filterParam, PDO::PARAM_STR);
 $stmt->bindParam(":limit", $limit, PDO::PARAM_INT);
 $stmt->bindParam(":offset", $offset, PDO::PARAM_INT);
+$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
 $stmt->execute();
 $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -156,11 +159,17 @@ $totalPages = ceil($totalRecords / $limit);
                                         | <a href="<?php echo get_url('admin/edit_player.php?id=' . se($player, "player_id", "", false)); ?>">Edit</a>
                                         | <a href="<?php echo get_url('admin/delete_player.php?id=' . se($player, "player_id", "", false)); ?>">Delete</a>
                                     <?php endif; ?>
-                                    <form method="POST" action="<?php echo get_url('manage_favorites.php'); ?>" style="display:inline;">
-                                        <input type="hidden" name="player_id" value="<?php se($player, "player_id"); ?>">
-                                        <input type="hidden" name="action" value="add">
-                                        <input type="submit" value="Add to Favorites">
-                                    </form>
+                                    <?php if ($player['is_favorite']) : ?>
+                                        <form method="POST" action="remove_from_favorites.php" style="display:inline;">
+                                            <input type="hidden" name="player_id" value="<?php se($player, "player_id"); ?>">
+                                            <input type="submit" value="Remove from Favorites">
+                                        </form>
+                                    <?php else : ?>
+                                        <form method="POST" action="add_to_favorites.php" style="display:inline;">
+                                            <input type="hidden" name="player_id" value="<?php se($player, "player_id"); ?>">
+                                            <input type="submit" value="Add to Favorites">
+                                        </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
